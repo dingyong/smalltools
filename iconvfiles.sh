@@ -4,8 +4,9 @@ CMDNAME=`basename $0`
 # Function for print usage 
 function print_usage()
 {
-    echo "Usage: $CMDNAME [-p] [-f encoding] [-t encoding] filelist" 1>&2
+    echo "Usage: $CMDNAME [-p] [-b] [-f encoding] [-t encoding] filelist" 1>&2
     echo "       -p : not output to new file , only print the preview" 1>&2
+    echo "       -b : not change the source file name" 1>&2
     echo "       -f : Convert characters from encoding.[default is GBK]" 1>&2
     echo "       -t : Convert characters to encoding.[default is UTF-8]" 1>&2
 }
@@ -17,9 +18,10 @@ if [ $# -lt 1 ]; then
 fi
 
 # Option parameters
-while getopts pf:t: OPT
+while getopts pbf:t: OPT
 do
     case $OPT in
+        "b" ) FLG_B="TRUE" ;;
         "p" ) FLG_P="TRUE" ;;
         "f" ) FLG_F="TRUE" ; VALUE_FROM="$OPTARG" ;;
         "t" ) FLG_T="TRUE" ; VALUE_TO="$OPTARG" ;;
@@ -64,6 +66,9 @@ do
             echo "Process the file '${arg}' " 1>&2
             echo "    ==> ${arg%.*}.${VALUE_TO}.${arg##*.}" 1>&2
             iconv -c -f ${VALUE_FROM} -t ${VALUE_TO} "$arg" > "${arg%.*}.${VALUE_TO}.${arg##*.}"
+            if [ ! "$FLG_B" = "TRUE" ]; then
+                mv "$arg" "${arg}.bak"
+            fi
         fi
         declare -i SUCCESSED=$SUCCESSED+1
     else
