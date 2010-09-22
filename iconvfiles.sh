@@ -48,26 +48,35 @@ if [ $# -lt 1 ]; then
 fi
 
 # Convert the file in the file list
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+
 echo "== Convert file from ${VALUE_FROM} to ${VALUE_TO} ==" 1>&2
+SUCCESSED=0
+FAILED=0
 for arg in $@
 do
-    if [ -r ${arg} ]; then # Check readable
+    if [ -r "${arg}" ]; then # Check readable
         if [ "$FLG_P" = "TRUE" ]; then
             echo "Preview the file '${arg}'" 1>&2
-            iconv -f ${VALUE_FROM} -t ${VALUE_TO} "${arg}"
+            iconv -c -f ${VALUE_FROM} -t ${VALUE_TO} "${arg}"
         else
             echo "Process the file '${arg}' " 1>&2
             echo "    ==> ${arg%.*}.${VALUE_TO}.${arg##*.}" 1>&2
-            iconv -f ${VALUE_FROM} -t ${VALUE_TO} "${arg}" > "${arg%.*}.${VALUE_TO}.${arg##*.}"
+            iconv -c -f ${VALUE_FROM} -t ${VALUE_TO} "$arg" > "${arg%.*}.${VALUE_TO}.${arg##*.}"
         fi
+        declare -i SUCCESSED=$SUCCESSED+1
     else
+        declare -i FAILED=$FAILED+1
         echo "Can not read the source file '${arg}'" 1>&2
     fi
 done
 
+# restore $IFS
+IFS=$SAVEIFS
+
+echo "==============================================" 1>&2
+echo "Successed : ${SUCCESSED} files" 1>&2
+echo "Failed : ${FAILED} files" 1>&2
+
 exit 0
-
-
-
-
-
